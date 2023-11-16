@@ -1,75 +1,139 @@
-// import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { Buffer } from "buffer";
 import type { NextPage } from "next";
-// import { useLocalStorage } from "usehooks-ts";
-import { useContractRead } from "wagmi";
-// import { MetaHeader } from "~~/components/MetaHeader";
-// import { ContractUI } from "~~/components/scaffold-eth";
+import { Abi, createPublicClient, http } from "viem";
+import { useContractRead, useContractWrite, useWaitForTransaction } from "wagmi";
+import { useAccount } from "wagmi";
 import { useScaffoldContract } from "~~/hooks/scaffold-eth";
+import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
-// import { ContractName } from "~~/utils/scaffold-eth/contract";
-// import { getContractNames } from "~~/utils/scaffold-eth/contractNames";
+interface Collectible {
+  name: string;
+  description: string;
+  image: string;
+}
 
 const Overview: NextPage = () => {
-  // const [yourCollectibles, setYourCollectibles] = useState();
+  const [allNFTs, setAllNFTs] = useState<Collectible[]>([]);
+  const [yourNFTs, setYourNFTs] = useState<Collectible[]>([]);
 
-  //   tokenOfOwnerByIndex;
+  const { address } = useAccount();
+
+  const client = createPublicClient({
+    chain: getTargetNetwork(),
+    transport: http(),
+  });
+
   const { data: collectibles } = useScaffoldContract({
     contractName: "YourCollectible",
   });
 
-  const { data: tokenURI } = useContractRead({
+  const { data: totalSupply } = useContractRead({
     address: collectibles?.address,
     abi: collectibles?.abi,
-    args: [BigInt(1)],
-    functionName: "tokenURI",
+    functionName: "totalSupply",
   });
 
-  // const getTokenURIByIndex = (index: any) => {
-  //   const { data: tokenURI } = useContractRead({
-  //     address: collectibles?.address,
-  //     abi: collectibles?.abi,
-  //     args: [BigInt(index)],
-  //     functionName: "tokenURI",
-  //   });
+  const { data: numberOfMyNFTs } = useContractRead({
+    address: collectibles?.address,
+    abi: collectibles?.abi,
+    functionName: "balanceOf",
+    args: [address || ""],
+  });
 
-  //   return tokenURI;
-  // };
+  // mint NFTs
+  const { data: dataMintNFT, write: mintNFT } = useContractWrite({
+    address: collectibles?.address,
+    abi: collectibles?.abi,
+    functionName: "mintItem",
+  });
 
-  // const updateCollectibles = () => {
-  //   const jsonManifestString = atob(tokenURI.substring(29));
-  //   const jsonManifest = JSON.parse(jsonManifestString);
-  // };
+  const { isSuccess: isSuccessMintNFT } = useWaitForTransaction({
+    hash: dataMintNFT?.hash,
+  });
 
-  //   const { data: dataSubmitTransaction, write: submitTransaction } = useContractWrite({
-  //     address: multiSigWalletAddress.multiSigWalletAddress,
-  //     abi: multiSigWallet?.abi,
-  //     functionName: "submitTransaction",
-  //   });
+  const getYourNFTs = async () => {
+    const yourUris: any = [];
+    const numberOfMyNFTsSafe = Number(numberOfMyNFTs) || 0;
+    if (numberOfMyNFTsSafe > 0) {
+      for (let index = 0; index < numberOfMyNFTsSafe; index++) {
+        const tokenIndex = await client.readContract({
+          address: collectibles?.address || "",
+          abi: collectibles?.abi as Abi,
+          functionName: "tokenOfOwnerByIndex",
+          args: [address, BigInt(index)],
+        });
+        const tokenIndexSafe = Number(tokenIndex) || 0;
+        const uri = await client.readContract({
+          address: collectibles?.address || "",
+          abi: collectibles?.abi as Abi,
+          functionName: "tokenURI",
+          args: [BigInt(tokenIndexSafe)],
+        });
+        const uriSubstring = String(uri).substring(29);
+        const decodedString = Buffer.from(uriSubstring as string, "base64").toString();
+        const jsonItem = JSON.parse(decodedString);
+        yourUris.push(jsonItem);
+      }
+      setYourNFTs(yourUris);
+    }
+  };
 
-  //   const {
-  //     writeAsync: createContract,
-  //     isLoading: isLoadingCreateContract,
-  //     // isSuccess: isSuccessCreateContract,
-  //   } = useScaffoldContractWrite({
-  //     contractName: "MultiSigFactory",
-  //     functionName: "createContract",
-  //     args: [BigInt(confirmations), signers],
-  //     blockConfirmations: 1,
-  //     onBlockConfirmation: txnReceipt => {
-  //       console.log("Transaction blockHash", txnReceipt.blockHash);
-  //     },
-  //   });
+  const getAllNFTs = async () => {
+    const uris: any = [];
+    const counters = totalSupply || 0;
+    for (let counter = 1; counter <= counters; counter++) {
+      try {
+        const uri = await client.readContract({
+          address: collectibles?.address || "",
+          abi: collectibles?.abi as Abi,
+          functionName: "tokenURI",
+          args: [BigInt(counter)],
+        });
+        const uriSubstring = String(uri).substring(29);
+        const decodedString = Buffer.from(uriSubstring as string, "base64").toString();
+        const jsonItem = JSON.parse(decodedString);
+        uris.push(jsonItem);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+    setAllNFTs(uris);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const totalSupplySafe = Number(totalSupply) || 0;
+      if (totalSupplySafe > 0) {
+        await getAllNFTs();
+      }
+      const numberOfMyNFTsSafe = Number(numberOfMyNFTs) || 0;
+      if (numberOfMyNFTsSafe > 0) {
+        await getYourNFTs();
+      }
+    };
+    fetchData();
+    if (isSuccessMintNFT) {
+      console.log("minted");
+      fetchData();
+    }
+  }, [totalSupply, numberOfMyNFTs, isSuccessMintNFT]);
 
   return (
     <>
       <h1>Overview</h1>
-      <button onClick={() => console.log(tokenURI)}> Click me</button>
-      {/* <img
-        src={
-          "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBpZD0iZXllMSI+PGVsbGlwc2Ugc3Ryb2tlLXdpZHRoPSIzIiByeT0iMjkuNSIgcng9IjI5LjUiIGlkPSJzdmdfMSIgY3k9IjE1NC41IiBjeD0iMTgxLjUiIHN0cm9rZT0iIzAwMCIgZmlsbD0iI2ZmZiIvPjxlbGxpcHNlIHJ5PSIzLjUiIHJ4PSIyLjUiIGlkPSJzdmdfMyIgY3k9IjE1NC41IiBjeD0iMTczLjUiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlPSIjMDAwIiBmaWxsPSIjMDAwMDAwIi8+PC9nPjxnIGlkPSJoZWFkIj48ZWxsaXBzZSBmaWxsPSIjYzE2MjUxIiBzdHJva2Utd2lkdGg9IjMiIGN4PSIyMDQuNSIgY3k9IjIxMS44MDA2NSIgaWQ9InN2Z181IiByeD0iODkiIHJ5PSI1MS44MDA2NSIgc3Ryb2tlPSIjMDAwIi8+PC9nPjxnIGlkPSJleWUyIj48ZWxsaXBzZSBzdHJva2Utd2lkdGg9IjMiIHJ5PSIyOS41IiByeD0iMjkuNSIgaWQ9InN2Z18yIiBjeT0iMTY4LjUiIGN4PSIyMDkuNSIgc3Ryb2tlPSIjMDAwIiBmaWxsPSIjZmZmIi8+PGVsbGlwc2Ugcnk9IjMuNSIgcng9IjMiIGlkPSJzdmdfNCIgY3k9IjE2OS41IiBjeD0iMjA4IiBzdHJva2Utd2lkdGg9IjMiIGZpbGw9IiMwMDAwMDAiIHN0cm9rZT0iIzAwMCIvPjwvZz48L3N2Zz4="
-        }
-        alt="asdas"
-      /> */}
+      <button onClick={() => mintNFT()}> Mint NFT</button>
+      <button onClick={() => console.log(yourNFTs)}> Click me</button>
+      <button onClick={() => console.log(totalSupply)}> Total Supply</button>
+      <h1>NFTS</h1>
+      {allNFTs.map((item, index) => (
+        <div key={index}>
+          <Image src={item.image} alt={`Collectible ${index}`} width={200} height={200} />
+          <p>{item.name}</p>
+          <p>{item.description}</p>
+        </div>
+      ))}
     </>
   );
 };

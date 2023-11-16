@@ -2,9 +2,9 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import 'base64-sol/base64.sol';
 
@@ -13,21 +13,41 @@ import './ToColor.sol';
 
 // GET LISTED ON OPENSEA: https://testnets.opensea.io/get-listed/step-two
 
-contract YourCollectible is ERC721, Ownable {
+contract YourCollectible is ERC721, Ownable, ERC721Enumerable {
 
   using Strings for uint256;
   using ToColor for bytes3;
   using Counters for Counters.Counter;
   Counters.Counter private _tokenIds;
 
-  constructor() public ERC721("Loogies", "LOOG") {
-    // RELEASE THE LOOGIES!
+  constructor() public ERC721("Loogies", "LOOG") {}
+
+  struct TokenTraits {
+    bytes3 color;
+    uint256 chubbiness;
+    uint256 height;
   }
 
-  mapping (uint256 => bytes3) public color;
-  mapping (uint256 => uint256) public chubbiness;
+  mapping (uint256 => TokenTraits) public tokenTraits;
 
   uint256 mintDeadline = block.timestamp + 24 hours;
+
+ function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
+        internal
+        override(ERC721, ERC721Enumerable)
+    {
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
+    }
+
+function supportsInterface(bytes4 interfaceId)
+    public
+    view
+    override(ERC721, ERC721Enumerable)
+    returns (bool)
+{
+    return super.supportsInterface(interfaceId);
+}
+
 
   function mintItem()
       public
@@ -40,8 +60,14 @@ contract YourCollectible is ERC721, Ownable {
       _mint(msg.sender, id);
 
       bytes32 predictableRandom = keccak256(abi.encodePacked( blockhash(block.number-1), msg.sender, address(this), id ));
-      color[id] = bytes2(predictableRandom[0]) | ( bytes2(predictableRandom[1]) >> 8 ) | ( bytes3(predictableRandom[2]) >> 16 );
-      chubbiness[id] = 35+((55*uint256(uint8(predictableRandom[3])))/255);
+
+      TokenTraits memory traits = TokenTraits({
+        color: bytes2(predictableRandom[0]) | ( bytes2(predictableRandom[1]) >> 8 ) | ( bytes3(predictableRandom[2]) >> 16 ),
+        chubbiness: 80 + ((70 * uint256(uint8(predictableRandom[3]))) / 255),
+        height: 50 + ((20 * uint256(uint8(predictableRandom[3]))) / 255)
+      });
+
+      tokenTraits[id] = traits;
 
       return id;
   }
@@ -60,8 +86,8 @@ contract YourCollectible is ERC721, Ownable {
   }
 
   function getDescription(uint256 id) internal view returns (string memory) {
-      return string(abi.encodePacked('This Loogie is the color #', color[id].toColor(),
-          ' with a chubbiness of ', chubbiness[id].toString(), '!!!'));
+      return string(abi.encodePacked('This Loogie is the color #', tokenTraits[id].color.toColor(),
+          ' with a chubbiness of ', tokenTraits[id].chubbiness.toString(), '!!!'));
   }
 
   function getImage(uint256 id) internal view returns (string memory) {
@@ -87,26 +113,49 @@ contract YourCollectible is ERC721, Ownable {
     return svg;
   }
 
-  // Visibility is `public` to enable it being called by other contracts for composition.
   function renderTokenById(uint256 id) public view returns (string memory) {
-    string memory render = string(abi.encodePacked(
-      '<g id="eye1">',
-          '<ellipse stroke-width="3" ry="29.5" rx="29.5" id="svg_1" cy="154.5" cx="181.5" stroke="#000" fill="#fff"/>',
-          '<ellipse ry="3.5" rx="2.5" id="svg_3" cy="154.5" cx="173.5" stroke-width="3" stroke="#000" fill="#000000"/>',
-        '</g>',
-        '<g id="head">',
-          '<ellipse fill="#',
-          color[id].toColor(),
-          '" stroke-width="3" cx="204.5" cy="211.80065" id="svg_5" rx="',
-          chubbiness[id].toString(),
-          '" ry="51.80065" stroke="#000"/>',
-        '</g>',
-        '<g id="eye2">',
-          '<ellipse stroke-width="3" ry="29.5" rx="29.5" id="svg_2" cy="168.5" cx="209.5" stroke="#000" fill="#fff"/>',
-          '<ellipse ry="3.5" rx="3" id="svg_4" cy="169.5" cx="208" stroke-width="3" fill="#000000" stroke="#000"/>',
-        '</g>'
-      ));
+    return string(abi.encodePacked(
+        renderLeftEar(id),
+        renderRightEar(id),
+        renderHead(id),
+        renderEyes(),
+        renderNose()
+    ));
+}
 
-    return render;
-  }
+function renderLeftEar(uint256 id) internal view returns (string memory) {
+    return string(abi.encodePacked(
+        '<ellipse fill="#', tokenTraits[id].color.toColor(), '" stroke-width="3" cx="130" cy="150" rx="30" ry="40" stroke="#000"/>'
+    ));
+}
+
+function renderRightEar(uint256 id) internal view returns (string memory) {
+    return string(abi.encodePacked(
+        '<ellipse fill="#', tokenTraits[id].color.toColor(), '" stroke-width="3" cx="280" cy="150" rx="30" ry="40" stroke="#000"/>'
+    ));
+}
+
+function renderHead(uint256 id) internal view returns (string memory) {
+    return string(abi.encodePacked(
+        '<ellipse fill="#', tokenTraits[id].color.toColor(), '" stroke-width="3" cx="204.5" cy="211.8" rx="',
+        tokenTraits[id].chubbiness.toString(), '" ry="', tokenTraits[id].height.toString(), '" stroke="#000"/>'
+    ));
+}
+
+function renderEyes() internal pure returns (string memory) {
+    return string(abi.encodePacked(
+      // <!-- Left Eye -->
+        '<ellipse stroke-width="3" ry="29.5" rx="29.5" cx="181.5" cy="154.5" stroke="#000" fill="#fff"/>',
+        '<ellipse ry="3.5" rx="2.5" cx="173.5" cy="154.5" stroke-width="3" stroke="#000" fill="#000000"/>',
+      // <!-- Right Eye -->
+        '<ellipse stroke-width="3" ry="29.5" rx="29.5" cx="219.5" cy="168.5" stroke="#000" fill="#fff"/>',
+        '<ellipse ry="3.5" rx="3" cx="218" cy="169.5" stroke-width="3" fill="#000000" stroke="#000"/>'
+        ));
+}
+
+function renderNose() internal pure returns (string memory) {
+        return string(abi.encodePacked(
+        '<ellipse fill="#000000" cx="204.5" cy="230" rx="20" ry="15" />'
+        ));
+}
 }

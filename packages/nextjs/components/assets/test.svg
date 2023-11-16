@@ -1,0 +1,15 @@
+<svg width="400" height="400" xmlns="http://www.w3.org/2000/svg">
+   <ellipse fill="#8B4513" stroke-width="3" cx="130" cy="150" rx="30" ry="40" stroke="#000"/>
+<!-- Bear's Right Ear -->
+<ellipse fill="#8B4513" stroke-width="3" cx="280" cy="150" rx="30" ry="40" stroke="#000"/>
+<!-- Bear's Head -->
+<ellipse fill="#8B4513" stroke-width="3" cx="204.5" cy="211.8" rx="136" ry="70" stroke="#000"/>
+<!-- Left Eye -->
+<ellipse stroke-width="3" ry="29.5" rx="29.5" cx="181.5" cy="154.5" stroke="#000" fill="#fff"/>
+<ellipse ry="3.5" rx="2.5" cx="173.5" cy="154.5" stroke-width="3" stroke="#000" fill="#000000"/>
+<!-- Right Eye -->
+<ellipse stroke-width="3" ry="29.5" rx="29.5" cx="219.5" cy="168.5" stroke="#000" fill="#fff"/>
+<ellipse ry="3.5" rx="3" cx="218" cy="169.5" stroke-width="3" fill="#000000" stroke="#000"/>
+<!-- Bear's Nose -->
+<ellipse fill="#000000" cx="204.5" cy="230" rx="20" ry="15" />
+</svg>
