@@ -23,7 +23,9 @@ contract YourCollectible is ERC721, Ownable, ERC721Enumerable {
   constructor() public ERC721("Loogies", "LOOG") {}
 
   struct TokenTraits {
+    address owner;
     bytes3 color;
+    bytes3 backgroundColor;
     uint256 chubbiness;
     uint256 height;
   }
@@ -60,9 +62,12 @@ function supportsInterface(bytes4 interfaceId)
       _mint(msg.sender, id);
 
       bytes32 predictableRandom = keccak256(abi.encodePacked( blockhash(block.number-1), msg.sender, address(this), id ));
+      bytes32 predictableRandom2 = keccak256(abi.encodePacked( blockhash(block.number+2), msg.sender, address(this), id ));
 
       TokenTraits memory traits = TokenTraits({
+        owner: msg.sender,
         color: bytes2(predictableRandom[0]) | ( bytes2(predictableRandom[1]) >> 8 ) | ( bytes3(predictableRandom[2]) >> 16 ),
+        backgroundColor: bytes2(predictableRandom2[0]) | ( bytes2(predictableRandom2[1]) >> 8 ) | ( bytes3(predictableRandom2[2]) >> 16 ),
         chubbiness: 80 + ((70 * uint256(uint8(predictableRandom[3]))) / 255),
         height: 50 + ((20 * uint256(uint8(predictableRandom[3]))) / 255)
       });
@@ -82,11 +87,11 @@ function supportsInterface(bytes4 interfaceId)
   }
 
   function getName(uint256 id) internal view returns (string memory) {
-      return string(abi.encodePacked('Loogie #', id.toString()));
+      return string(abi.encodePacked('Bumbly #', id.toString()));
   }
 
   function getDescription(uint256 id) internal view returns (string memory) {
-      return string(abi.encodePacked('This Loogie is the color #', tokenTraits[id].color.toColor(),
+      return string(abi.encodePacked('This Bumbly is the color #', tokenTraits[id].color.toColor(),
           ' with a chubbiness of ', tokenTraits[id].chubbiness.toString(), '!!!'));
   }
 
@@ -115,11 +120,18 @@ function supportsInterface(bytes4 interfaceId)
 
   function renderTokenById(uint256 id) public view returns (string memory) {
     return string(abi.encodePacked(
+        renderBackground(id),
         renderLeftEar(id),
         renderRightEar(id),
         renderHead(id),
         renderEyes(),
         renderNose()
+    ));
+}
+
+function renderBackground(uint256 id) internal view returns (string memory) {
+    return string(abi.encodePacked(
+        '<rect width="100%" height="100%" fill="#', tokenTraits[id].backgroundColor.toColor(),'"/>'
     ));
 }
 

@@ -7,11 +7,11 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     ToColor: {
-      address: "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+      address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
       abi: [],
     },
     YourCollectible: {
-      address: "0x4A679253410272dd5232B3Ff7cF5dbB88f295319",
+      address: "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
       abi: [
         {
           inputs: [],
@@ -431,8 +431,18 @@ const deployedContracts = {
           name: "tokenTraits",
           outputs: [
             {
+              internalType: "address",
+              name: "owner",
+              type: "address",
+            },
+            {
               internalType: "bytes3",
               name: "color",
+              type: "bytes3",
+            },
+            {
+              internalType: "bytes3",
+              name: "backgroundColor",
               type: "bytes3",
             },
             {
