@@ -33,6 +33,7 @@ contract YourCollectible is ERC721, Ownable, ERC721Enumerable {
   mapping (uint256 => TokenTraits) public tokenTraits;
 
   uint256 mintDeadline = block.timestamp + 24 hours;
+  uint256 public NFTPrice = 0.001 ether;
 
  function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
         internal
@@ -52,14 +53,16 @@ function supportsInterface(bytes4 interfaceId)
 
 
   function mintItem()
-      public
+      public payable
       returns (uint256)
   {
       require( block.timestamp < mintDeadline, "DONE MINTING");
+      require(msg.value == NFTPrice, "not enought ETH");
+		NFTPrice += 0.0001 ether ;
       _tokenIds.increment();
 
       uint256 id = _tokenIds.current();
-      _mint(msg.sender, id);
+      _safeMint(msg.sender, id);
 
       bytes32 predictableRandom = keccak256(abi.encodePacked( blockhash(block.number-1), msg.sender, address(this), id ));
       bytes32 predictableRandom2 = keccak256(abi.encodePacked( blockhash(block.number+2), msg.sender, address(this), id ));
@@ -91,8 +94,7 @@ function supportsInterface(bytes4 interfaceId)
   }
 
   function getDescription(uint256 id) internal view returns (string memory) {
-      return string(abi.encodePacked('This Bumbly is the color #', tokenTraits[id].color.toColor(),
-          ' with a chubbiness of ', tokenTraits[id].chubbiness.toString(), '!!!'));
+      return string(abi.encodePacked('This Bumbly has a power of ', (tokenTraits[id].chubbiness * tokenTraits[id].height).toString(), '!!!'));
   }
 
   function getImage(uint256 id) internal view returns (string memory) {

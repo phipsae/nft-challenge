@@ -23,8 +23,8 @@ export const YourNFTs = () => {
           ))}
         </div>
       ) : (
-        <div className="col-span-3 p-2 rounded flex justify-center items-center">
-          <p>No NFTs yet</p>
+        <div className="flex justify-center items-center h-[480px]">
+          <p className="font-bold">No NFTs yet</p>
         </div>
       )}
     </>

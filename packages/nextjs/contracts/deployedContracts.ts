@@ -11,7 +11,7 @@ const deployedContracts = {
       abi: [],
     },
     YourCollectible: {
-      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      address: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
       abi: [
         {
           inputs: [],
@@ -113,6 +113,19 @@ const deployedContracts = {
           type: "event",
         },
         {
+          inputs: [],
+          name: "NFTPrice",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
           inputs: [
             {
               internalType: "address",
@@ -202,7 +215,7 @@ const deployedContracts = {
               type: "uint256",
             },
           ],
-          stateMutability: "nonpayable",
+          stateMutability: "payable",
           type: "function",
         },
         {
