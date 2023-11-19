@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
+import { TransferModal } from "./TransferModal";
 import { Buffer } from "buffer";
 import { useContractRead } from "wagmi";
 import { useScaffoldContract } from "~~/hooks/scaffold-eth";
@@ -72,9 +73,19 @@ export const NFTCard = ({ tokenId }: NFTCardProps) => {
     console.log(owner);
   }, [tokenURI, JSONURI, ownerNft, owner]);
 
+  // Modal
+  const element = document.getElementById(name);
+
   return (
     <>
-      <div className="card card-compact w-52 bg-base-100 shadow-xl">
+      <div
+        className="card card-compact w-52 bg-base-100 shadow-xl"
+        onClick={() => {
+          if (element) {
+            (element as HTMLDialogElement).showModal();
+          }
+        }}
+      >
         {isLoadingTokenURI
           ? "is loading..."
           : image != "...loading" && (
@@ -95,15 +106,11 @@ export const NFTCard = ({ tokenId }: NFTCardProps) => {
         <div className="card-body">
           <div className="flex flex-row justify-between">
             <h2 className="card-title">{name}</h2>
-            {/* {all && (
-              <div className="card-actions justify-end">
-                <button className="btn btn-error">Fight</button>
-              </div>
-            )} */}
           </div>
           <p>{description}</p>
         </div>
       </div>
+      <TransferModal name={name} description={description} image={image} tokenId={tokenId} owner={owner} />
     </>
   );
 };

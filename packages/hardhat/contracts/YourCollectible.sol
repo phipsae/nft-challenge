@@ -172,4 +172,9 @@ function renderNose() internal pure returns (string memory) {
         '<ellipse fill="#000000" cx="204.5" cy="230" rx="20" ry="15" />'
         ));
 }
+
+function withdraw() public onlyOwner {
+		(bool sent, ) = msg.sender.call{value: address(this).balance }("");
+        require(sent, "Failed to send Ether");
+	}
 }
