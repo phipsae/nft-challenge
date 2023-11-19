@@ -7,6 +7,8 @@ interface SharedStateContextProps {
   setAllNFTs: (value: Collectible[]) => void;
   yourNFTs: Collectible[];
   setYourNFTs: (value: Collectible[]) => void;
+  ownerTokenPairs: OwnerTokenPair[];
+  setOwnerTokenPairs: React.Dispatch<React.SetStateAction<OwnerTokenPair[]>>;
 }
 
 const SharedStateContext = createContext<SharedStateContextProps | undefined>(undefined);
@@ -15,6 +17,7 @@ export const SharedStateProvider: React.FC<{ children: ReactNode }> = ({ childre
   const [minted, setMinted] = useState<boolean>(false);
   const [allNFTs, setAllNFTs] = useState<Collectible[]>([]);
   const [yourNFTs, setYourNFTs] = useState<Collectible[]>([]);
+  const [ownerTokenPairs, setOwnerTokenPairs] = useState<OwnerTokenPair[]>([]);
 
   return (
     <SharedStateContext.Provider
@@ -25,6 +28,8 @@ export const SharedStateProvider: React.FC<{ children: ReactNode }> = ({ childre
         setAllNFTs,
         yourNFTs,
         setYourNFTs,
+        ownerTokenPairs,
+        setOwnerTokenPairs,
       }}
     >
       {children}
@@ -44,4 +49,9 @@ interface Collectible {
   name: string;
   description: string;
   image: string;
+}
+
+interface OwnerTokenPair {
+  owner: string;
+  tokenId: number;
 }
