@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Spinner } from "../assets/Spinner";
 import { AddressInput } from "../scaffold-eth";
-import { useAccount } from "wagmi";
+import { useAccount, useWaitForTransaction } from "wagmi";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { useSharedState } from "~~/sharedStateContext";
@@ -19,7 +19,7 @@ export const TransferModal = ({ name, description, image, tokenId, owner }: Tran
   const { address } = useAccount();
   const { setUpdateTrigger } = useSharedState();
 
-  const { writeAsync: transferNft, isLoading: isLoadingTransferNft } = useScaffoldContractWrite({
+  const { writeAsync: transferNft, data: dataTransferNFT } = useScaffoldContractWrite({
     contractName: "YourCollectible",
     functionName: "transferFrom",
     args: [address, to, BigInt(tokenId)],
@@ -28,6 +28,10 @@ export const TransferModal = ({ name, description, image, tokenId, owner }: Tran
       console.log("Transaction blockHash", txnReceipt.blockHash);
       setUpdateTrigger(true);
     },
+  });
+
+  const { isLoading: isLoadingTransferNft } = useWaitForTransaction({
+    hash: dataTransferNFT?.hash,
   });
 
   return (

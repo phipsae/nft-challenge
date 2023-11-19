@@ -13,12 +13,12 @@ interface HeaderMenuLink {
 }
 
 export const menuLinks: HeaderMenuLink[] = [
+  // {
+  //   label: "Home",
+  //   href: "/",
+  // },
   {
-    label: "Home",
-    href: "/",
-  },
-  {
-    label: "Overview",
+    label: "🐻 Bumblies",
     href: "/overview",
   },
   {

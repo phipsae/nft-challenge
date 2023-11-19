@@ -1,3 +1,7 @@
+# Create one of 100 Bumbly NFTs 🐻
+
+All made out of randomly created SVG images.
+
 # 🏗 Scaffold-ETH 2
 
 <h4 align="center">

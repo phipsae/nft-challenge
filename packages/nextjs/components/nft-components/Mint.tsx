@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Spinner } from "../assets/Spinner";
 import { formatEther } from "viem";
 import { useContractWrite, useWaitForTransaction } from "wagmi";
 import { useScaffoldContract, useScaffoldContractRead } from "~~/hooks/scaffold-eth";
@@ -44,7 +45,7 @@ export const Mint = () => {
     value: BigInt(NFTPrice || 0),
   });
 
-  const { isSuccess: isSuccessMintNFT } = useWaitForTransaction({
+  const { isSuccess: isSuccessMintNFT, isLoading: isLoadingMintNFT } = useWaitForTransaction({
     hash: dataMintNFT?.hash,
   });
 
@@ -59,8 +60,13 @@ export const Mint = () => {
     <>
       <div className="flex flex-col">
         <button className={"btn btn-error w-full"} onClick={() => mintNFT()}>
-          {" "}
-          Mint Your Bumbly Bear for {conversion()} ETH
+          {isLoadingMintNFT ? (
+            <div className="flex w-[100px] justify-center">
+              <Spinner width="100" height="100"></Spinner>
+            </div>
+          ) : (
+            `Mint Your Bumbly Bear for ${conversion()} ETH`
+          )}
         </button>
         <div className="flex justify-center mt-1">
           <h2> each time someone mints the price goes up by 0.0001 ether</h2>

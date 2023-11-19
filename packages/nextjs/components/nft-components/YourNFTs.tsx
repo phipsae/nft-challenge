@@ -15,14 +15,6 @@ export const YourNFTs = () => {
 
   return (
     <>
-      <button
-        onClick={() => {
-          console.log(yourNftIds());
-        }}
-      >
-        {" "}
-        Click Me
-      </button>
       {yourNftIds().length > 0 ? (
         <div className="grid grid-cols-3 gap-2 overflow-auto" style={{ height: `${3 * 160}px` }}>
           {yourNftIds().map((item, index) => (
