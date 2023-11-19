@@ -33,7 +33,7 @@ export const AllNFTs = () => {
   return (
     <>
       {(totalSupply || 0) > 0 ? (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-2 overflow-auto" style={{ height: `${3 * 160}px` }}>
           {nftIDs().map((item, index) => (
             <div key={index} className="p-2 rounded ">
               <NFTCard tokenId={item} />

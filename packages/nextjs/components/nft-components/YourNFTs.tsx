@@ -15,7 +15,7 @@ export const YourNFTs = () => {
   return (
     <>
       {yourNftIds().length > 0 ? (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-2 overflow-auto" style={{ height: `${3 * 160}px` }}>
           {yourNftIds().map((item, index) => (
             <div key={index} className="p-2 rounded ">
               <NFTCard tokenId={item} />

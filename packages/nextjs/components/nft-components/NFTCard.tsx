@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import { Buffer } from "buffer";
 import { useContractRead } from "wagmi";
 import { useScaffoldContract } from "~~/hooks/scaffold-eth";
@@ -74,13 +75,22 @@ export const NFTCard = ({ tokenId }: NFTCardProps) => {
   return (
     <>
       <div className="card card-compact w-52 bg-base-100 shadow-xl">
-        {isLoadingTokenURI ? (
-          "is loading..."
-        ) : (
-          <figure style={{ width: "100%", height: "150px", overflow: "hidden" }}>
-            <img src={image} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          </figure>
-        )}
+        {isLoadingTokenURI
+          ? "is loading..."
+          : image != "...loading" && (
+              <div className="rounded-t-lg overflow-hidden">
+                <figure style={{ width: "100%", height: "150px", overflow: "hidden" }}>
+                  <Image
+                    src={image}
+                    alt={name}
+                    width={100}
+                    height={100}
+                    layout="responsive"
+                    className="rounded-t-lg object-cover"
+                  />
+                </figure>
+              </div>
+            )}
 
         <div className="card-body">
           <div className="flex flex-row justify-between">
