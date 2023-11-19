@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { NFTCard } from "./NFTCard";
 import { useAccount } from "wagmi";
 import { useSharedState } from "~~/sharedStateContext";
@@ -7,13 +8,21 @@ export const YourNFTs = () => {
 
   const { ownerTokenPairs } = useSharedState();
 
-  const yourNftIds = () => {
+  const yourNftIds = useCallback(() => {
     const filteredPairs = ownerTokenPairs.filter(pair => pair.owner === address);
     return filteredPairs.map(pair => pair.tokenId);
-  };
+  }, [address, ownerTokenPairs]);
 
   return (
     <>
+      <button
+        onClick={() => {
+          console.log(yourNftIds());
+        }}
+      >
+        {" "}
+        Click Me
+      </button>
       {yourNftIds().length > 0 ? (
         <div className="grid grid-cols-3 gap-2 overflow-auto" style={{ height: `${3 * 160}px` }}>
           {yourNftIds().map((item, index) => (

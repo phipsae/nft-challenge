@@ -5,7 +5,7 @@ import { useScaffoldContract } from "~~/hooks/scaffold-eth";
 import { useSharedState } from "~~/sharedStateContext";
 
 export const AllNFTs = () => {
-  const { minted, setMinted } = useSharedState();
+  const { minted, setMinted, updateTrigger, setUpdateTrigger } = useSharedState();
 
   const { data: collectibles } = useScaffoldContract({
     contractName: "YourCollectible",
@@ -28,7 +28,12 @@ export const AllNFTs = () => {
       setMinted(false);
       refetchTotalSupply();
     }
-  }, [minted, setMinted, refetchTotalSupply]);
+    if (updateTrigger) {
+      setUpdateTrigger(false);
+      refetchTotalSupply();
+      console.log("I am here, allNFTs");
+    }
+  }, [minted, setMinted, refetchTotalSupply, updateTrigger, setUpdateTrigger]);
 
   return (
     <>

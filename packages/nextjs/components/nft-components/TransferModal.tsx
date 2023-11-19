@@ -4,6 +4,7 @@ import { AddressInput } from "../scaffold-eth";
 import { useAccount } from "wagmi";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
+import { useSharedState } from "~~/sharedStateContext";
 
 interface TransferModalProps {
   name: string;
@@ -16,6 +17,7 @@ interface TransferModalProps {
 export const TransferModal = ({ name, description, image, tokenId, owner }: TransferModalProps) => {
   const [to, setTo] = useState("");
   const { address } = useAccount();
+  const { setUpdateTrigger } = useSharedState();
 
   const { writeAsync: transferNft, isLoading: isLoadingTransferNft } = useScaffoldContractWrite({
     contractName: "YourCollectible",
@@ -24,6 +26,7 @@ export const TransferModal = ({ name, description, image, tokenId, owner }: Tran
     blockConfirmations: 1,
     onBlockConfirmation: txnReceipt => {
       console.log("Transaction blockHash", txnReceipt.blockHash);
+      setUpdateTrigger(true);
     },
   });
 
@@ -39,8 +42,6 @@ export const TransferModal = ({ name, description, image, tokenId, owner }: Tran
                     <img
                       src={image}
                       alt={name}
-                      // width={10}
-                      // height={100}
                       style={{ width: "100%", height: "100%" }}
                       className="rounded-t-lg object-cover"
                     />

@@ -22,7 +22,7 @@ export const NFTCard = ({ tokenId }: NFTCardProps) => {
   const [owner, setOwner] = useState("...loading");
 
   // for your NFTs
-  const { ownerTokenPairs, setOwnerTokenPairs } = useSharedState();
+  const { ownerTokenPairs, setOwnerTokenPairs, updateTrigger, setUpdateTrigger } = useSharedState();
 
   const { data: collectibles } = useScaffoldContract({
     contractName: "YourCollectible",
@@ -35,7 +35,7 @@ export const NFTCard = ({ tokenId }: NFTCardProps) => {
     args: [BigInt(tokenId)],
   });
 
-  const { data: ownerNft } = useContractRead({
+  const { data: ownerNft, refetch: refetchOwnerNft } = useContractRead({
     address: collectibles?.address,
     abi: collectibles?.abi,
     functionName: "ownerOf",
@@ -71,7 +71,14 @@ export const NFTCard = ({ tokenId }: NFTCardProps) => {
     JSONURI(tokenURI);
     console.log(ownerNft);
     console.log(owner);
-  }, [tokenURI, JSONURI, ownerNft, owner]);
+    if (updateTrigger) {
+      console.log("I am here, NFTCard!!!!!!");
+      console.log("before", ownerTokenPairs);
+      refetchOwnerNft();
+      console.log("after", ownerTokenPairs);
+      setUpdateTrigger(false);
+    }
+  }, [tokenURI, JSONURI, ownerNft, owner, updateTrigger, setUpdateTrigger, ownerTokenPairs, refetchOwnerNft]);
 
   // Modal
   const element = document.getElementById(name);

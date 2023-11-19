@@ -20,7 +20,9 @@ contract YourCollectible is ERC721, Ownable, ERC721Enumerable {
   using Counters for Counters.Counter;
   Counters.Counter private _tokenIds;
 
-  constructor() public ERC721("Loogies", "LOOG") {}
+  constructor() public ERC721("Loogies", "LOOG") {
+    transferOwnership(0xD042799bADfc032db4860b7Ee0fc28371332eBc2);
+  }
 
   struct TokenTraits {
     address owner;
@@ -32,8 +34,9 @@ contract YourCollectible is ERC721, Ownable, ERC721Enumerable {
 
   mapping (uint256 => TokenTraits) public tokenTraits;
 
-  uint256 mintDeadline = block.timestamp + 24 hours;
+  uint256 mintDeadline = block.timestamp + 100 hours;
   uint256 public NFTPrice = 0.001 ether;
+  uint256 public maxSupply = 100;
 
  function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
         internal
@@ -58,6 +61,7 @@ function supportsInterface(bytes4 interfaceId)
   {
       require( block.timestamp < mintDeadline, "DONE MINTING");
       require(msg.value == NFTPrice, "not enought ETH");
+      require(totalSupply() < maxSupply, "Maxium supply reached");
 		NFTPrice += 0.0001 ether ;
       _tokenIds.increment();
 
